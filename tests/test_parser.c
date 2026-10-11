@@ -1,4 +1,5 @@
-#include "http_parser.h"
+#include "http_request.h"
+#include "http_response.h"
 
 static int failures = 0;
 
@@ -33,7 +34,7 @@ static int test_simple_get(void) {
 
     http_request_t req = {0};
 
-    int res = http_parser_data_to_request(&req, raw, sizeof(raw) - 1);
+    int res = http_request_from_data(&req, raw, sizeof(raw) - 1);
     CHECK(res == LHTTP_SUCCESS);
     if (res != LHTTP_SUCCESS) return -1;
 
@@ -62,7 +63,7 @@ static int test_simple_post(void) {
 
     http_request_t req = {0};
 
-    int res = http_parser_data_to_request(&req, raw, sizeof(raw) - 1);
+    int res = http_request_from_data(&req, raw, sizeof(raw) - 1);
     CHECK(res == LHTTP_SUCCESS);
     if (res != LHTTP_SUCCESS) return -1;
 
@@ -75,6 +76,8 @@ static int test_simple_post(void) {
     CHECK(http_headers_arr_find(&req.headers, "Content-Type") >= 0);
     CHECK(req.body.data != NULL && strcmp(req.body.data, "{\"message\": \"Hello World\"}") == 0);
 
+    http_request_free(&req);
+
     return (local_failures == failures) ? 0 : -1;
 }
 
@@ -85,7 +88,51 @@ static int test_incomplete_request(void) {
 
     http_request_t req = {0};
 
-    CHECK(http_parser_data_to_request(&req, raw, sizeof(raw) - 1) == LHTTP_REQUEST_INCOMPLETE);
+    CHECK(http_request_from_data(&req, raw, sizeof(raw) - 1) == LHTTP_REQUEST_INCOMPLETE);
+
+    return (local_failures == failures) ? 0 : -1;
+}
+
+static int test_response(void) {
+    http_response_t resp = {0};
+
+    int local_failures = failures;
+
+    char ct[] = "Content-Type: application/json";
+    char cl[] = "Content-Length: 26";
+    char h[]  = "Host: www.ltale.com";
+    char b[]  = "{\"message\": \"Hello World\"}";
+    const char expected[] = "HTTP/1.1 200 OK\r\n"
+                            "Content-Type: application/json\r\n"
+                            "Content-Length: 26\r\n"
+                            "Host: www.ltale.com\r\n"
+                            "\r\n"
+                            "{\"message\": \"Hello World\"}";
+
+    const char *data_out = NULL;
+    size_t size = 0;
+
+    resp.version = HTTP_VERSION_1_1;
+    (void)http_response_code_parse_num(&resp.response_code, 200);
+
+    http_header_t content_type, content_length, host;
+
+    CHECK(http_header_parse_line_to_header(&content_type, ct, sizeof(ct) - 1) == LHTTP_SUCCESS);
+    CHECK(http_header_parse_line_to_header(&content_length, cl, sizeof(cl) - 1) == LHTTP_SUCCESS);
+    CHECK(http_header_parse_line_to_header(&host, h, sizeof(h) - 1) == LHTTP_SUCCESS);
+
+    CHECK(http_headers_arr_append(&resp.headers, &content_type) == LHTTP_SUCCESS);
+    CHECK(http_headers_arr_append(&resp.headers, &content_length) == LHTTP_SUCCESS);
+    CHECK(http_headers_arr_append(&resp.headers, &host) == LHTTP_SUCCESS);
+
+    CHECK(http_body_initialize(&resp.body, b, sizeof(b) - 1) == LHTTP_SUCCESS);
+
+    CHECK(http_response_to_data(&resp, &data_out, &size) == LHTTP_SUCCESS);
+    CHECK(data_out != NULL && strcmp(data_out, expected) == 0);
+    CHECK(size == sizeof(expected) - 1);
+
+    free((void *) data_out);
+    http_response_free(&resp);
 
     return (local_failures == failures) ? 0 : -1;
 }
@@ -94,6 +141,7 @@ int main(void) {
     TEST(test_simple_get());
     TEST(test_incomplete_request());
     TEST(test_simple_post());
+    TEST(test_response());
 
     return failures == 0 ? 0 : 1;
 }

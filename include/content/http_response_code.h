@@ -3,6 +3,8 @@
 
 #include "http_common.h"
 
+#define LHTTP_RESPONSE_CODE_NUM_SIZE 3
+
 typedef struct _http_response_code_ {
     const char *str;
     int         num;

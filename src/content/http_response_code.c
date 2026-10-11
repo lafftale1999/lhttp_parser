@@ -20,10 +20,10 @@ int http_response_code_parse_str(http_response_code_t *out, const char *in, size
         return LHTTP_STATIC_ERR;
     }
 
-    long num = strtol(in, in + in_len, 10);
+    long num = strtol(in, NULL, 10);
 
     for (size_t idx = 0; idx < response_code_map_len; idx++) {
-        http_response_code_t *tmp = &response_code_map[idx];
+        const http_response_code_t *tmp = &response_code_map[idx];
         if (num == tmp->num) {
             out->num = tmp->num;
             out->str = tmp->str;

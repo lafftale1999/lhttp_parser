@@ -10,4 +10,7 @@ typedef struct _http_response_ {
     http_body_t             body;
 } http_response_t;
 
+int http_response_to_data(http_response_t *in, const char **data, size_t *size_out);
+int http_response_free(http_response_t *resp);
+
 #endif

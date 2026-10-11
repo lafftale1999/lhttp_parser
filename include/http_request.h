@@ -12,5 +12,6 @@ typedef struct _http_request_ {
 } http_request_t;
 
 int http_request_free(http_request_t *req);
+int http_request_from_data(http_request_t *out, const char *data, size_t data_len);
 
 #endif

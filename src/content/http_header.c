@@ -101,8 +101,8 @@ static int http_header_allocate_key_val(http_header_t *out,
         return LHTTP_STATIC_ERR;
     }
 
-    tmp_key = calloc(key_len, sizeof(char));
-    tmp_val = calloc(val_len, sizeof(char));
+    tmp_key = calloc(key_len + 1, sizeof(char));
+    tmp_val = calloc(val_len + 1, sizeof(char));
 
     if (tmp_key == NULL || tmp_val == NULL) {
         fprintf(stderr, "http_header_allocate_key_val failed, unable to allocate memory\n");

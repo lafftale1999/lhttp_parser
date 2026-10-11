@@ -10,5 +10,7 @@
 #define LHTTP_UNKOWN_VERSION            -6  /** Unkown version */
 #define LHTTP_NOT_FOUND                 -7  /** Not found */
 #define LHTTP_REQUEST_INCOMPLETE        -8  /** Not received the request in full */
+#define LHTTP_BUFFER_OVERFLOW           -9  /** Allocated memory is too small */
+#define LHTTP_UNKOWN_ERROR              -10 /** Unkown error */
 
 #endif

@@ -11,7 +11,7 @@ int http_body_initialize(http_body_t *out, const char *data_in, size_t limit) {
         return LHTTP_STATIC_ERR;
     }
 
-    char *tmp = calloc(limit, sizeof(char));
+    char *tmp = calloc(limit + 1, sizeof(char));
     if (tmp == NULL) {
         fprintf(stderr, "http_body_initialize failed, unable to allocate memory\n");
         return LHTTP_MEMORY_ERR;

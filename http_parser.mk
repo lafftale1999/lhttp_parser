@@ -18,7 +18,6 @@
 #   LAFFTALE_HTTP_LIB_CFLAGS      flags used when building the library
 # --------------------------------------------------------------------------------------------------
 
-# Must come before any other include in this file
 LAFFTALE_HTTP_LIB_DIR        := $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
 
 LAFFTALE_HTTP_LIB_BUILD_DIR  ?= $(LAFFTALE_HTTP_LIB_DIR)/build
@@ -28,7 +27,6 @@ LAFFTALE_HTTP_LIB_CFLAGS     ?= -std=c11 -Wall -Wextra -O2
 LAFFTALE_HTTP_LIB_SRCS := $(wildcard $(LAFFTALE_HTTP_LIB_DIR)/src/*.c) \
                           $(wildcard $(LAFFTALE_HTTP_LIB_DIR)/src/content/*.c)
 
-# Config dir comes first so a project-supplied http_config.h wins
 LAFFTALE_HTTP_LIB_INC  := -I$(LAFFTALE_HTTP_LIB_CONFIG_DIR) \
                           -I$(LAFFTALE_HTTP_LIB_DIR)/include \
                           -I$(LAFFTALE_HTTP_LIB_DIR)/include/content \
@@ -37,14 +35,12 @@ LAFFTALE_HTTP_LIB_INC  := -I$(LAFFTALE_HTTP_LIB_CONFIG_DIR) \
 LAFFTALE_HTTP_LIB_OBJS := $(patsubst $(LAFFTALE_HTTP_LIB_DIR)/src/%.c,$(LAFFTALE_HTTP_LIB_BUILD_DIR)/obj/%.o,$(LAFFTALE_HTTP_LIB_SRCS))
 LAFFTALE_HTTP_LIB_A    := $(LAFFTALE_HTTP_LIB_BUILD_DIR)/libhttp_parser.a
 
-# Don't let the rules below hijack the including project's default goal
 _LAFFTALE_HTTP_LIB_SAVED_GOAL := $(.DEFAULT_GOAL)
 
 $(LAFFTALE_HTTP_LIB_A): $(LAFFTALE_HTTP_LIB_OBJS)
 	@mkdir -p $(@D)
 	$(AR) rcs $@ $^
 
-# Record the compile command so objects are rebuilt when flags change (e.g. toggling sanitizers)
 _LAFFTALE_HTTP_LIB_FLAGS_FILE := $(LAFFTALE_HTTP_LIB_BUILD_DIR)/.cflags
 _LAFFTALE_HTTP_LIB_FLAGS      := $(CC) $(LAFFTALE_HTTP_LIB_CFLAGS) $(LAFFTALE_HTTP_LIB_INC)
 

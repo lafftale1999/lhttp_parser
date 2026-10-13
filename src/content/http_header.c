@@ -268,6 +268,30 @@ int http_headers_arr_append(http_headers_arr_t *headers, http_header_t *h) {
     return LHTTP_SUCCESS;
 }
 
+int http_headers_arr_append_str(http_headers_arr_t *headers, const char *line, size_t len) {
+    int res;
+    
+    if (headers == NULL) {
+        fprintf(stderr, "http_headers_arr_append_str failed, headers is NULL\n");
+        return LHTTP_STATIC_ERR;
+    }
+
+    if (line == NULL) {
+        fprintf(stderr, "http_headers_arr_append_str failed, line is NULL\n");
+        return LHTTP_STATIC_ERR;
+    }
+
+    http_header_t tmp = {0};
+
+    res = http_header_parse_line_to_header(&tmp, line, len);
+    if (res != LHTTP_SUCCESS) {
+        fprintf(stderr, "http_headers_arr_append_str failed, unable to parse line");
+        return res;
+    }
+
+    return http_headers_arr_append(headers, &tmp);    
+}
+
 int http_headers_arr_find(http_headers_arr_t *headers, const char *target) {
     if (headers == NULL) {
         fprintf(stderr, "http_headers_arr_find failed, headers is NULL\n");

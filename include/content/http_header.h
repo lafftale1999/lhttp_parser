@@ -78,6 +78,18 @@ typedef struct _http_headers_ {
 int http_headers_arr_append(http_headers_arr_t *headers, http_header_t *h);
 
 /**
+ * \brief Append unparsed line to array. This will first parse header and then
+ * append it.
+ * 
+ * \param *headers array of headers
+ * \param *line header in string format
+ * \param len length of string
+ * 
+ * \return LHTTP_SUCCESS | LHTTP_STATIC_ERR | LHTTP_MEMORY_ERR
+ */
+int http_headers_arr_append_str(http_headers_arr_t *headers, const char *line, size_t len);
+
+/**
  * \brief Find related HTTP header
  * 
  * \param *headers array of headers

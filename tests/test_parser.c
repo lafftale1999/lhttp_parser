@@ -38,8 +38,8 @@ static int test_simple_get(void) {
     CHECK(res == LHTTP_SUCCESS);
     if (res != LHTTP_SUCCESS) return -1;
 
-    CHECK(req.method == HTTP_METHOD_GET);
-    CHECK(req.version == HTTP_VERSION_1_1);
+    CHECK(req.method.num == HTTP_METHOD_GET);
+    CHECK(req.version.num == HTTP_VERSION_1_1);
     CHECK(req.path.path != NULL && strcmp(req.path.path, "/index.html") == 0);
     CHECK(req.headers.len == 2);
     CHECK(http_headers_arr_find(&req.headers, "Host") >= 0);
@@ -67,8 +67,8 @@ static int test_simple_post(void) {
     CHECK(res == LHTTP_SUCCESS);
     if (res != LHTTP_SUCCESS) return -1;
 
-    CHECK(req.method == HTTP_METHOD_POST);
-    CHECK(req.version == HTTP_VERSION_1_1);
+    CHECK(req.method.num == HTTP_METHOD_POST);
+    CHECK(req.version.num == HTTP_VERSION_1_1);
     CHECK(req.path.path != NULL && strcmp(req.path.path, "/index.html") == 0);
     CHECK(req.headers.len == 3);
     CHECK(http_headers_arr_find(&req.headers, "Host") >= 0);
@@ -112,18 +112,12 @@ static int test_response(void) {
     const char *data_out = NULL;
     size_t size = 0;
 
-    resp.version = HTTP_VERSION_1_1;
-    (void)http_response_code_parse_num(&resp.response_code, 200);
+    CHECK(http_version_str_to_v(&resp.version, "HTTP/1.1") == LHTTP_SUCCESS);
+    CHECK(http_response_code_parse_num(&resp.response_code, 200) == LHTTP_SUCCESS);
 
-    http_header_t content_type, content_length, host;
-
-    CHECK(http_header_parse_line_to_header(&content_type, ct, sizeof(ct) - 1) == LHTTP_SUCCESS);
-    CHECK(http_header_parse_line_to_header(&content_length, cl, sizeof(cl) - 1) == LHTTP_SUCCESS);
-    CHECK(http_header_parse_line_to_header(&host, h, sizeof(h) - 1) == LHTTP_SUCCESS);
-
-    CHECK(http_headers_arr_append(&resp.headers, &content_type) == LHTTP_SUCCESS);
-    CHECK(http_headers_arr_append(&resp.headers, &content_length) == LHTTP_SUCCESS);
-    CHECK(http_headers_arr_append(&resp.headers, &host) == LHTTP_SUCCESS);
+    CHECK(http_headers_arr_append_str(&resp.headers, ct, sizeof(ct) - 1) == LHTTP_SUCCESS);
+    CHECK(http_headers_arr_append_str(&resp.headers, cl, sizeof(cl) - 1) == LHTTP_SUCCESS);
+    CHECK(http_headers_arr_append_str(&resp.headers, h, sizeof(h) - 1) == LHTTP_SUCCESS);
 
     CHECK(http_body_initialize(&resp.body, b, sizeof(b) - 1) == LHTTP_SUCCESS);
 

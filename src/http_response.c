@@ -12,7 +12,7 @@ static size_t http_response_get_size(http_response_t *in) {
     size_t size = 0;
 
     // Version
-    size += strlen("HTTP/") + strlen(http_version_v_to_str(in->version)) + SPACE_SIZE;
+    size += strlen("HTTP/") + strlen(in->version.str) + SPACE_SIZE;
     size += LHTTP_RESPONSE_CODE_NUM_SIZE + SPACE_SIZE + strlen(in->response_code.str);
     size += crlf;
     
@@ -66,7 +66,6 @@ int http_response_to_data(http_response_t *in, const char **data, size_t *size_o
     char *tmp;
     char *pos;
     int res = 0;
-    int idx = 0;
 
     size_t data_size = 0;
     size_t remaining = 0;
@@ -101,7 +100,7 @@ int http_response_to_data(http_response_t *in, const char **data, size_t *size_o
     // FIRST LINE
     res = http_response_write_line(&pos, remaining, &written,
                                    "HTTP/%s %d %s\r\n",
-                                   http_version_v_to_str(in->version),
+                                   in->version.str,
                                    in->response_code.num,
                                    in->response_code.str);
     if (res != LHTTP_SUCCESS) {

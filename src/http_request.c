@@ -106,13 +106,11 @@ static int http_request_request_first_line(http_request_t *out, const char *line
     tmp_size = pos_arr[1] - pos_arr[0];
     memcpy(buf, pos_arr[0], tmp_size);
     buf[tmp_size - 1] = '\0';
-    res = http_method_str_to_m(buf);
+    res = http_method_str_to_m(&out->method, buf);
     if (res < 0) {
         fprintf(stderr, "http_request_request_first_line failed, method is malformed\n");
         return res;
     }
-
-    out->method = res;
 
     // ADD PATH
     tmp_size = pos_arr[2] - pos_arr[1];
@@ -128,14 +126,12 @@ static int http_request_request_first_line(http_request_t *out, const char *line
     tmp_size = end - pos_arr[2] + 1;
     memcpy(buf, pos_arr[2], tmp_size);
     buf[tmp_size] = '\0';
-    res = http_version_str_to_v(buf);
+    res = http_version_str_to_v(&out->version, buf);
     if (res < 0) {
         fprintf(stderr, "http_request_request_first_line failed, version is malformed\n");
         (void)http_path_free(&out->path);
         return res;
     }
-
-    out->version = res;
 
     return LHTTP_SUCCESS;
 }

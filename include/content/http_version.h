@@ -3,11 +3,15 @@
 
 #include "http_common.h"
 
-typedef enum _http_version_ {
+typedef enum _http_version_e_ {
     HTTP_VERSION_1_1
+} http_version;
+
+typedef struct _http_version_ {
+    const char   *str;
+    http_version  num;
 } http_version_t;
 
-int http_version_str_to_v(const char *str);
-const char* http_version_v_to_str(http_version_t v);
+int http_version_str_to_v(http_version_t *out, const char *str);
 
 #endif

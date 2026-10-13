@@ -1,9 +1,13 @@
 #include "http_method.h"
 
-static const char GET_STR[]     = "GET";
-static const char PUT_STR[]     = "PUT";
-static const char POST_STR[]    = "POST";
-static const char DELETE_STR[]  = "DELETE";
+static const http_method_t http_methods_map[] = {
+    {.num = HTTP_METHOD_GET,    .str = "GET"},
+    {.num = HTTP_METHOD_PUT,    .str = "PUT"},
+    {.num = HTTP_METHOD_POST,   .str = "POST"},
+    {.num = HTTP_METHOD_DELETE, .str = "DELETE"}
+};
+
+static const size_t http_methods_map_size = sizeof(http_methods_map) / sizeof(http_methods_map[0]);
 
 static int http_method_check_boundaries(const char *str) {
     size_t size = 0;
@@ -17,7 +21,7 @@ static int http_method_check_boundaries(const char *str) {
     return -1;
 }
 
-int http_method_str_to_m(const char *str) {
+int http_method_str_to_m(http_method_t *out, const char *str) {
     int res = LHTTP_UNKOWN_METHOD;
 
     if (str == NULL) {
@@ -30,38 +34,17 @@ int http_method_str_to_m(const char *str) {
         return LHTTP_STR_MALFORMED;
     }
 
-    if (!strncmp(str, GET_STR, sizeof(GET_STR))) {
-        res = HTTP_METHOD_GET;
+    for (size_t idx = 0; idx < http_methods_map_size; idx++) {
+        const http_method_t *tmp = &http_methods_map[idx];
+
+        if (!strncmp(str, tmp->str, strlen(tmp->str))) {
+            memcpy(out, tmp, sizeof(*out));
+            return LHTTP_SUCCESS;
+        }
     }
-    else if (!strncmp(str, PUT_STR, sizeof(PUT_STR))) {
-        res = HTTP_METHOD_PUT;
-    }
-    else if (!strncmp(str, POST_STR, sizeof(POST_STR))) {
-        res = HTTP_METHOD_POST;
-    }
-    else if (!strncmp(str, DELETE_STR, sizeof(DELETE_STR))) {
-        res = HTTP_METHOD_DELETE;
-    }
+
+    fprintf(stderr, "http_method_str_to_m failed, unkown method\n");
+    return LHTTP_UNKOWN_METHOD;
 
     return res;
-}
-
-const char* http_method_m_to_str(http_method_t m) {
-    switch (m) {
-        case HTTP_METHOD_GET:
-            return GET_STR;
-
-        case HTTP_METHOD_PUT:
-            return PUT_STR;
-
-        case HTTP_METHOD_POST:
-            return POST_STR;
-
-        case HTTP_METHOD_DELETE:
-            return DELETE_STR;
-
-        default:
-            fprintf(stderr, "http_method_m_to_str failed, method not recognized\n");
-            return NULL;
-    }
 }

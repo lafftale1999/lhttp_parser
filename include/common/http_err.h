@@ -12,5 +12,6 @@
 #define LHTTP_REQUEST_INCOMPLETE        -8  /** Not received the request in full */
 #define LHTTP_BUFFER_OVERFLOW           -9  /** Allocated memory is too small */
 #define LHTTP_UNKOWN_ERROR              -10 /** Unkown error */
+#define LHTTP_REQUEST_MALFORMED         -11 /** Malformed request */
 
 #endif

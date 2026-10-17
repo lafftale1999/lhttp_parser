@@ -18,7 +18,8 @@ typedef struct _http_path_ {
  * \param *in path string
  * \param in_len length of string
  * 
- * \return LHTTP_SUCCESS | LHTTP_STATIC_ERR | LHTTP_MEMORY_ERR
+ * \return LHTTP_SUCCESS | LHTTP_STATIC_ERR | LHTTP_MEMORY_ERR | LHTTP_REQUEST_MALFORMED |
+ * LHTTP_NOT_FOUND
  */
 int http_path_str_to_p(http_path_t *out, const char *in, size_t in_len);
 

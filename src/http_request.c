@@ -170,9 +170,9 @@ int http_request_from_data(http_request_t *out, const char *data, size_t data_le
     data_start = data;
     data_end = data_start + data_len;
 
-    // bytes_read == 0 -> headers not parsed yet.
-    // Otherwise bytes_read holds the size of the header section (incl. "\r\n\r\n")
-    if (out->bytes_read == 0) {
+    // bytes_parsed == 0 -> headers not parsed yet.
+    // Otherwise bytes_parsed holds the size of the header section (incl. "\r\n\r\n")
+    if (out->bytes_parsed == 0) {
         if (out->headers.headers != NULL) {
             fprintf(stderr, "http_request_from_data failed, headers are not NULL\n");
             return LHTTP_REQUEST_MALFORMED;
@@ -183,6 +183,12 @@ int http_request_from_data(http_request_t *out, const char *data, size_t data_le
         if (res < 0) {
             fprintf(stderr, "http_request_from_data failed, find_headers res: %ld\n", res);
             return res;
+        }
+
+        // Ensure headers aren't larger than allowed data size
+        if (((size_t)(headers_end - data_start)) > LHTTP_REQUEST_MAX_SIZE) {
+            fprintf(stderr, "http_request_from_data failed, headers section larger than allowed size\n");
+            return LHTTP_REQUEST_TOO_LARGE;
         }
 
         // Parse first line
@@ -208,6 +214,12 @@ int http_request_from_data(http_request_t *out, const char *data, size_t data_le
                 return res;
             }
 
+            // Check that header isn't larger than allowed size
+            if (((size_t)(line_end - line_start)) > LHTTP_HEADER_MAX_SIZE) {
+                fprintf(stderr, "http_request_from_data failed, header line too large\n");
+                return LHTTP_HEADER_TOO_LARGE;
+            }
+
             // line_end points at the last character of the line (inclusive)
             res = http_headers_arr_append_str(&out->headers, line_start, (size_t) (line_end - line_start + 1));
             if (res < 0) {
@@ -218,7 +230,7 @@ int http_request_from_data(http_request_t *out, const char *data, size_t data_le
         }
 
         // headers_end points at the last character before "\r\n\r\n"
-        out->bytes_read = (size_t) (headers_end - data_start + 1) + HEADERS_END_OFFSET;
+        out->bytes_parsed = (size_t) (headers_end - data_start + 1) + HEADERS_END_OFFSET;
     }
 
     // No Content-Length -> no body, request is complete
@@ -233,8 +245,13 @@ int http_request_from_data(http_request_t *out, const char *data, size_t data_le
         return LHTTP_REQUEST_MALFORMED;
     }
 
+    if ((out->bytes_parsed + body_size) > LHTTP_REQUEST_MAX_SIZE) {
+        fprintf(stderr, "http_request_from_data failed, request too large\n");
+        return LHTTP_REQUEST_TOO_LARGE;
+    }
+
     // Body begins right after the header section
-    body_start = data_start + out->bytes_read;
+    body_start = data_start + out->bytes_parsed;
 
     // Body not fully received yet, caller should call again with more data
     if ((size_t) (data_end - body_start) < (size_t) body_size) {
@@ -247,7 +264,7 @@ int http_request_from_data(http_request_t *out, const char *data, size_t data_le
         return res;
     }
 
-    out->bytes_read += out->body.size;
+    out->bytes_parsed += out->body.size;
 
     return LHTTP_SUCCESS;
 }

@@ -117,11 +117,11 @@ static int test_bytes_read(void) {
 
     // Headers received, body only partially received
     CHECK(http_request_from_data(&req, raw, headers_len + 2) == LHTTP_REQUEST_INCOMPLETE);
-    CHECK(req.bytes_read == headers_len);
+    CHECK(req.bytes_parsed == headers_len);
 
     // Call again with the rest of the data
     CHECK(http_request_from_data(&req, raw, sizeof(raw) - 1) == LHTTP_SUCCESS);
-    CHECK(req.bytes_read == first_len);
+    CHECK(req.bytes_parsed == first_len);
     CHECK(req.headers.len == 2);
     CHECK(strcmp(req.headers.headers[0].val, "example.com") == 0);
     CHECK(req.body.data != NULL && strcmp(req.body.data, "hello") == 0);
@@ -134,7 +134,7 @@ static int test_bytes_read(void) {
     CHECK(http_request_from_data(&req2, raw + first_len, sizeof(raw) - 1 - first_len) == LHTTP_SUCCESS);
     CHECK(req2.method.num == HTTP_METHOD_GET);
     CHECK(req2.path.path != NULL && strcmp(req2.path.path, "/b") == 0);
-    CHECK(req2.bytes_read == sizeof(raw) - 1 - first_len);
+    CHECK(req2.bytes_parsed == sizeof(raw) - 1 - first_len);
 
     http_request_free(&req2);
 

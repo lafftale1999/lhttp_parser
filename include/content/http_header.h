@@ -4,6 +4,9 @@
 
 #include "http_common.h"
 
+#define LHTTP_HEADER_ARR_INIT_SIZE      10      /** Header array initial size */
+#define LHTTP_HEADER_ARR_MODIFIER       2       /** Modifier for increasing memory */
+
 /**
  * --------------------------------------------------------------------------------------------------
  * SINGLE HEADER

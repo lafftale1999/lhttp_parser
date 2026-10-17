@@ -5,21 +5,13 @@
 
 #define LHTTP_RESPONSE_CODE_NUM_SIZE 3
 
-typedef struct _http_response_code_ {
-    const char *str;
-    int         num;
-} http_response_code_t;
-
 /**
- * \brief Initialize a http_response_code with a string
- * 
- * \param *out response code to initialize
- * \param *in response code in string
- * \param in_len response code string length
- * 
- * \return LHTTP_SUCCESS | LHTTP_STATIC_ERR | LHTTP_NOT_FOUND
+ * \brief response code structure
  */
-int http_response_code_parse_str(http_response_code_t *out, const char *in, size_t in_len);
+typedef struct _http_response_code_ {
+    const char *str;    /** pointer to static string */
+    int         num;    /** response code number */
+} http_response_code_t;
 
 /**
  * \brief Initialize a http_response_code with a number

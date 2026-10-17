@@ -1,9 +1,12 @@
 #ifndef _LAFFTALE_HTTP_CONFIG_H_
 #define _LAFFTALE_HTTP_CONFIG_H_
 
+#ifndef LHTTP_HEADER_MAX_SIZE
 #define LHTTP_HEADER_MAX_SIZE           2048    /** Max http header size per header */
+#endif
 
-#define LHTTP_HEADER_ARR_INIT_SIZE      10      /** Header array initial size */
-#define LHTTP_HEADER_ARR_MODIFIER       2       /** Modifier for increasing memory */
+#ifndef LHTTP_REQUEST_MAX_SIZE
+#define LHTTP_REQUEST_MAX_SIZE          4096
+#endif
 
 #endif

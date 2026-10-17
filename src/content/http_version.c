@@ -25,7 +25,6 @@ static int http_version_boundary_check(const char *str) {
 }
 
 int http_version_str_to_v(http_version_t *out, const char *str) {
-    int res = LHTTP_UNKOWN_VERSION;
     size_t offset = sizeof(LEADING_V_STR) - 1;
     const char *version;
 

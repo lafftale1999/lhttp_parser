@@ -3,13 +3,16 @@
 
 #include "http_base_content.h"
 
+/**
+ * \brief Request structure, initialize by using `http_request_from_data()`
+ */
 typedef struct _http_request_ {
-    http_method_t       method;
-    http_path_t         path;
-    http_version_t      version;
-    http_headers_arr_t  headers;
-    http_body_t         body;
-    size_t              bytes_read;
+    http_method_t       method;         /** Method string and enumeration */
+    http_path_t         path;           /** Path string */
+    http_version_t      version;        /** Version string and enumeration */
+    http_headers_arr_t  headers;        /** Array of headers with key and value */
+    http_body_t         body;           /** Body string */
+    size_t              bytes_parsed;   /** Bytes parsed */
 } http_request_t;
 
 /**
@@ -23,7 +26,7 @@ typedef struct _http_request_ {
  * 
  * \return LHTTP_SUCCESS | LHTTP_STATIC_ERR | LHTTP_REQUEST_MALFORMED | LHTTP_HEADER_TOO_LARGE |
  * LHTTP_REQUEST_INCOMPLETE | LHTTP_STR_MALFORMED | LHTTP_UNKOWN_METHOD | LHTTP_UNKOWN_VERSION |
- * LHTTP_MEMORY_ERR
+ * LHTTP_MEMORY_ERR | LHTTP_REQUEST_TOO_LARGE
  */
 int http_request_from_data(http_request_t *out, const char *data, size_t data_len);
 
@@ -32,7 +35,7 @@ int http_request_from_data(http_request_t *out, const char *data, size_t data_le
  * 
  * \param *req request to free up
  * 
- * \return 
+ * \return LHTTP_SUCCESS | LHTTP_STATIC_ERR
  */
 int http_request_free(http_request_t *req);
 

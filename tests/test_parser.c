@@ -93,6 +93,91 @@ static int test_incomplete_request(void) {
     return (local_failures == failures) ? 0 : -1;
 }
 
+static int test_bytes_read(void) {
+    int local_failures = failures;
+
+    const char headers[] =
+        "POST /a HTTP/1.1\r\n"
+        "Host: example.com\r\n"
+        "Content-Length: 5\r\n"
+        "\r\n";
+    const char raw[] =
+        "POST /a HTTP/1.1\r\n"
+        "Host: example.com\r\n"
+        "Content-Length: 5\r\n"
+        "\r\n"
+        "hello"
+        "GET /b HTTP/1.1\r\n"
+        "\r\n";
+
+    const size_t headers_len = sizeof(headers) - 1;
+    const size_t first_len = headers_len + 5;
+
+    http_request_t req = {0};
+
+    // Headers received, body only partially received
+    CHECK(http_request_from_data(&req, raw, headers_len + 2) == LHTTP_REQUEST_INCOMPLETE);
+    CHECK(req.bytes_read == headers_len);
+
+    // Call again with the rest of the data
+    CHECK(http_request_from_data(&req, raw, sizeof(raw) - 1) == LHTTP_SUCCESS);
+    CHECK(req.bytes_read == first_len);
+    CHECK(req.headers.len == 2);
+    CHECK(strcmp(req.headers.headers[0].val, "example.com") == 0);
+    CHECK(req.body.data != NULL && strcmp(req.body.data, "hello") == 0);
+
+    http_request_free(&req);
+
+    // Pipelined request starts where the first one ended
+    http_request_t req2 = {0};
+
+    CHECK(http_request_from_data(&req2, raw + first_len, sizeof(raw) - 1 - first_len) == LHTTP_SUCCESS);
+    CHECK(req2.method.num == HTTP_METHOD_GET);
+    CHECK(req2.path.path != NULL && strcmp(req2.path.path, "/b") == 0);
+    CHECK(req2.bytes_read == sizeof(raw) - 1 - first_len);
+
+    http_request_free(&req2);
+
+    return (local_failures == failures) ? 0 : -1;
+}
+
+static int test_malformed_request(void) {
+    int local_failures = failures;
+
+    // First line missing path and version
+    const char bad_first_line[] =
+        "GARBAGE\r\n"
+        "Host: example.com\r\n"
+        "\r\n";
+
+    // Unknown method
+    const char bad_method[] =
+        "FOO / HTTP/1.1\r\n"
+        "Host: example.com\r\n"
+        "\r\n";
+
+    // Negative Content-Length
+    const char bad_content_length[] =
+        "POST / HTTP/1.1\r\n"
+        "Host: example.com\r\n"
+        "Content-Length: -5\r\n"
+        "\r\n"
+        "hello";
+
+    http_request_t req = {0};
+
+    CHECK(http_request_from_data(&req, bad_first_line, sizeof(bad_first_line) - 1) == LHTTP_STR_MALFORMED);
+
+    req = (http_request_t) {0};
+    CHECK(http_request_from_data(&req, bad_method, sizeof(bad_method) - 1) == LHTTP_UNKOWN_METHOD);
+
+    req = (http_request_t) {0};
+    CHECK(http_request_from_data(&req, bad_content_length, sizeof(bad_content_length) - 1) == LHTTP_REQUEST_MALFORMED);
+    http_request_free(&req);
+
+    return (local_failures == failures) ? 0 : -1;
+}
+
 static int test_response(void) {
     http_response_t resp = {0};
 
@@ -135,6 +220,8 @@ int main(void) {
     TEST(test_simple_get());
     TEST(test_incomplete_request());
     TEST(test_simple_post());
+    TEST(test_bytes_read());
+    TEST(test_malformed_request());
     TEST(test_response());
 
     return failures == 0 ? 0 : 1;

@@ -1,14 +1,5 @@
 #include "http_response_code.h"
 
-static const http_response_code_t response_code_map[] = {
-    {.num = 200, .str = "OK"},
-    {.num = 404, .str = "Not Found"},
-    {.num = 413, .str = "Content Too Large"},
-    {.num = 500, .str = "Internal Server Error"}
-};
-
-static const size_t response_code_map_len = sizeof(response_code_map) / sizeof(response_code_map[0]);
-
 int http_response_code_parse_num(http_response_code_t *out, int num) {
     if (out == NULL) {
         fprintf(stderr, "http_response_code_parse_str failed, out is NULL\n");

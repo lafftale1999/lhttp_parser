@@ -3,6 +3,8 @@
 
 #include "http_common.h"
 
+#define LHTTP_V_1_1_STR "1.1"
+
 /**
  * \brief Version enumeration
  */
